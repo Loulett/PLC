@@ -100,43 +100,6 @@ class Stream:
 
         return FlattenStream(self)
 
-    # def split(self, sep):
-    #     class SplitStream(Stream):  # -----------=======
-    #         end = False
-
-    #         class SplitChunkStream(Stream):
-    #             def __next__(self):
-    #                 try:
-    #                     x = next(self.iter)
-    #                 except StopIteration:
-    #                     SplitStream.end = True
-    #                     raise
-    #                 if x == sep:
-    #                     raise StopIteration
-    #                 return x
-
-    #         def __init__(self, i):
-    #             super().__init__(i)
-    #             self.last_chunk = None
-
-    #         def __next__(self):
-    #             if self.last_chunk is not None:
-    #                 self.last_chunk.iter = iter(self.last_chunk.to_list())
-    #             if self.end:
-    #                 raise StopIteration
-    #             self.last_chunk = self.SplitChunkStream(self.iter)
-
-    #             return self.last_chunk
-
-    #     return SplitStream(self)
-
-
-# a = Stream([3, 2, 1])
-# b = Stream([4, 5])
-# c = Stream([a, b])
-
-# print(c.flatten().order_by().to_list())
-# print(Stream(range(10)).where(lambda x: x % 2 == 0).select(lambda x: x ** 2).take(3).to_list())
 
 def fibb(a, b):
     while True:
@@ -144,8 +107,9 @@ def fibb(a, b):
         yield a
 
 
+# Task 1
 print(Stream(fibb(0, 1)).where(lambda x: x % 3 == 0).select(lambda x: x**2 if x % 2 == 0 else x).take(5).to_list())
 
-# with open('linq.py') as file:
-#     print(Stream(file).select(lambda x: iter(x.split(' '))).flatten().select(lambda x: ''.join(x)).where(
-#         lambda x: x).group_by().select(lambda x: (x[1].count(), x[0])).order_by(reverse=True).to_list())
+# Task 2
+with open('linq.py') as file:
+    print(Stream(file).select(lambda x: iter([i.strip() for i in x.split(' ')])).flatten().select(lambda x: ''.join(x)).where(lambda x: x).group_by().select(lambda x: (x[1].count(), x[0])).order_by(reverse=True).to_list())
