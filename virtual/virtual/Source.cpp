@@ -4,9 +4,9 @@ struct Base;
 struct Derived;
 
 struct Vtable{
-	void (*OnlyBase)();
-	void (*Both)();
-	void (*OnlyDerived)();
+	void (*OnlyBase)(void*);
+	void (*Both)(void*);
+	void (*OnlyDerived)(void*);
 };
 
 
@@ -14,26 +14,39 @@ struct Vtable{
 
 #define END };
 
-#define DECLARE_METHOD(Class, Name) void Name##Class() { std::cout << #Class << "::" << #Name << "\n";} \
-struct Help##Name##Class{Help##Name##Class(){ Vtable##Class.Name = Name##Class; }} help##Name##Class;
+#define DECLARE_METHOD(Class, Name) void Name##Class(void* self); \
+struct Help##Name##Class{Help##Name##Class(){ Vtable##Class.Name = Name##Class; }} help##Name##Class; \
+void Name##Class(void* self)
 
-#define VIRTUAL_CALL(Class, FunctionName) Class->VTable->FunctionName();
+#define VIRTUAL_CALL(Object, FunctionName) Object->VTable->FunctionName(Object);
 
 // базовый класс
 VIRTUAL_CLASS(Base)
 int a;
 END
 // методы
-DECLARE_METHOD(Base, Both)
-DECLARE_METHOD(Base, OnlyBase)
+DECLARE_METHOD(Base, Both) {
+	int a = reinterpret_cast<Base*>(self)->a;
+	std::cout << "Base::Both a = " << a << "\n";
+}
+DECLARE_METHOD(Base, OnlyBase) {
+	int a = reinterpret_cast<Base*>(self)->a;
+	std::cout << "Base::OnlyBase a = " << a << "\n";
+}
 
 // класс-наследник
 VIRTUAL_CLASS(Derived)
 int b;
 END
 // методы
-DECLARE_METHOD(Derived, Both)
-DECLARE_METHOD(Derived, OnlyDerived)
+DECLARE_METHOD(Derived, Both) {
+	int b = reinterpret_cast<Derived*>(self)->b;
+	std::cout << "Derived::Both b = " << b << "\n";
+}
+DECLARE_METHOD(Derived, OnlyDerived) {
+	int b = reinterpret_cast<Derived*>(self)->b;
+	std::cout << "Derived::OnlyDerived b = " << b << "\n";
+}
 
 
 int main()
@@ -42,6 +55,7 @@ int main()
 	base.a = 0;
 	Base* pbase = &base;
 	Derived derived = Derived();
+	derived.b = 1;
 	Base* reallyDerived = reinterpret_cast<Base*>(&derived);
 
 	VIRTUAL_CALL(pbase, Both); // печатает УBase::BothФ
