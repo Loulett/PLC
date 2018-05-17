@@ -1,13 +1,16 @@
 #include <iostream>
+#include <map>
+#include <functional>
+#include <string>
 
 struct Base;
 struct Derived;
 
-struct Vtable{
-	void (*OnlyBase)(void*);
-	void (*Both)(void*);
-	void (*OnlyDerived)(void*);
+struct Vtable {
+	std::map<std::string, std::function<void(void*)>> vtable;
 };
+
+
 
 
 #define VIRTUAL_CLASS(BaseName) Vtable Vtable##BaseName; struct BaseName{ Vtable* VTable = &Vtable##BaseName;
@@ -15,10 +18,10 @@ struct Vtable{
 #define END };
 
 #define DECLARE_METHOD(Class, Name) void Name##Class(void* self); \
-struct Help##Name##Class{Help##Name##Class(){ Vtable##Class.Name = Name##Class; }} help##Name##Class; \
+struct Help##Name##Class{Help##Name##Class(){ Vtable##Class.vtable[#Name] = Name##Class; }} help##Name##Class; \
 void Name##Class(void* self)
 
-#define VIRTUAL_CALL(Object, FunctionName) Object->VTable->FunctionName(Object);
+#define VIRTUAL_CALL(Object, FunctionName) Object->VTable->vtable[#FunctionName](Object);
 
 // базовый класс
 VIRTUAL_CLASS(Base)
